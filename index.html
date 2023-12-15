@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+	<link rel="stylesheet" href="./style.css">
+	<title>Web-SSTV</title>
+</head>
+<body>
+	<main class="container">
+		<h1>Web SSTV</h1>
+		<h3>Send SSTV signals from your browser</h3>
+		<select id="modeSelect">
+			<option value="none" selected disabled hidden>Select a mode</option>
+			<option value="M1">Martin M1</option>
+			<option value="M2">Martin M2</option>
+			<option value="S1">Scottie 1</option>
+			<option value="S2">Scottie 2</option>
+			<option value="SDX">Scottie DX</option>
+		</select>
+
+		<label id="imgLabel" for="imgPicker">Select an Image</label>
+		<input type="file" name="imgPicker" id="imgPicker"/>
+		<center id="imgArea" class="container">
+			<canvas id="imgCanvas" width="320" height="256"></canvas>
+			<br>
+			<span id="warningText"></span>
+		</center>
+		<button id="startButton" class="contrast" disabled>Encode</button>
+
+	</main>
+	<footer class="container">
+		<p>Currently supports encoding (sending) in Martin and Scottie formats. SSTV signal decoding and more encoding modes coming soon.</p>
+		<p>&copy 2023 Christian Kegel - Available under the MIT License</p>
+	</footer>
+</body>
+<script src="./script.js"></script>
+</html>
