@@ -10,7 +10,8 @@
 <body>
 	<main class="container">
 		<h1>Web SSTV</h1>
-		<h3>Send SSTV signals from your browser</h3>
+		<h3>Send SSTV signals from your browser:</h3>
+		<label id="modeLabel" for="modeSelect">Select a mode:</label>
 		<select id="modeSelect">
 			<option value="none" selected disabled hidden>Select a mode</option>
 			<option value="M1">Martin M1</option>
@@ -20,7 +21,7 @@
 			<option value="SDX">Scottie DX</option>
 		</select>
 
-		<label id="imgLabel" for="imgPicker">Select an Image</label>
+		<label id="imgLabel" for="imgPicker">Upload an image:</label>
 		<input type="file" name="imgPicker" id="imgPicker"/>
 		<center id="imgArea" class="container">
 			<canvas id="imgCanvas" width="320" height="256"></canvas>
@@ -31,8 +32,11 @@
 
 	</main>
 	<footer class="container">
-		<p>Currently supports encoding (sending) in Martin and Scottie formats. SSTV signal decoding and more encoding modes coming soon.</p>
-		<p>&copy 2023 Christian Kegel - Available under the MIT License</p>
+		<small>Currently supports encoding (sending) in Martin and Scottie formats. SSTV signal decoding and more encoding modes coming soon.</small>
+		<br>
+		<small><a href="https://ckegel.github.io/Web-SSTV/">Check out the project on Github</a></small>
+		<br>
+		<small>&copy 2023 Christian Kegel - Available under the MIT License</small>
 	</footer>
 </body>
 <script src="./script.js"></script>

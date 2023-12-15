@@ -451,10 +451,10 @@ imgPicker.addEventListener("change", (e) => {
             canvasCtx.drawImage(img,0,0, canvas.width, canvas.height);
         }
         img.src = event.target.result;
+        imageLoaded = true;
         if(modeSelect.value != "none"){
 			warningText.textContent = "";
 			startButton.disabled = false;
-			imageLoaded = true;
         }
     }
     reader.readAsDataURL(e.target.files[0]);
