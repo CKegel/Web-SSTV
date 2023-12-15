@@ -21,6 +21,7 @@ const HEADER_BREAK_LENGTH = 0.01; //10 ms
 const VIS_BIT_LENGTH = 0.03;      //30 ms
 const SYNC_PULSE_FREQ = 1200;
 const BLANKING_PULSE_FREQ = 1500;
+const COLOR_FREQ_MULT = 3.1372549;
 const VIS_BIT_FREQ = {
 	ONE: 1100,
 	ZERO: 1300,
@@ -47,10 +48,22 @@ class Format {
 
 	getRGBValueAsFreq(data, scanLine, vertPos) {
 		const index = scanLine * (this.#vertResolution * 4) + vertPos * 4;
-		let red = data[index] * 3.137 + 1500;
-		let green = data[index + 1] * 3.137 + 1500;
-		let blue = data[index + 2] * 3.137 + 1500;
+		let red = data[index] * COLOR_FREQ_MULT + 1500;
+		let green = data[index + 1] * COLOR_FREQ_MULT + 1500;
+		let blue = data[index + 2] * COLOR_FREQ_MULT + 1500;
 		return [red, green, blue];
+	}
+
+	getYRYBYValueAsFreq(data, scanLine, vertPos) {
+		const index = scanLine * (this.#vertResolution * 4) + vertPos * 4;
+		let red = data[index];
+		let green = data[index + 1];
+		let blue = data[index + 2];
+
+		let Y = 6.0 + (.003906 * ((65.738 * red) + (129.057 * green) + (25.064 * blue)));
+		let RY = 128.0 + (.003906 * ((112.439 * red) + (-94.154 * green) + (-18.285 * blue)));
+		let BY = 128.0 + (.003906 * ((-37.945 * red) + (-74.494 * green) + (112.439 * blue)));
+		return [1500 + Y * COLOR_FREQ_MULT , 1500 + RY * COLOR_FREQ_MULT, 1500 + BY * COLOR_FREQ_MULT];
 	}
 
 	encodePrefix(oscillator, startTime) {
@@ -427,6 +440,134 @@ class ScottieDX extends Format {
 		oscillator.stop(time);
 	}
 }
+class PD50 extends Format {
+
+	constructor() {
+		let numScanLines = 256;
+		let vertResolution = 320;
+		let blankingInterval = 0.00208;
+		let scanLineLength = 0.091520;
+		let syncPulseLength = 0.02;
+		let VISCode = [true, false, true, true, true, false, true];
+
+		super(numScanLines, vertResolution, blankingInterval, scanLineLength, syncPulseLength, VISCode);
+	}
+
+	prepareImage(data) {
+		let preparedImage = [];
+		for(let scanLine = 0; scanLine < this.numScanLines; ++scanLine){
+			let Y = [];
+			let RY = [];
+			let BY = [];
+			for(let vertPos = 0; vertPos < this.vertResolution; ++vertPos){
+  				let freqs = this.getYRYBYValueAsFreq(data, scanLine, vertPos);
+  				Y.push(freqs[0]);
+  				RY.push(freqs[1]);
+  				BY.push(freqs[2]);
+  			}
+  			preparedImage.push([Y, RY, BY]);
+		}
+		for(let scanLine = 0; scanLine < this.numScanLines; scanLine += 2){
+			for(let vertPos = 0; vertPos < this.vertResolution; ++vertPos){
+				let RY = preparedImage[scanLine][1][vertPos] + preparedImage[scanLine + 1][1][vertPos]
+				preparedImage[scanLine][1][vertPos] = RY / 2;
+				let BY = preparedImage[scanLine][2][vertPos] + preparedImage[scanLine + 1][2][vertPos]
+				preparedImage[scanLine][2][vertPos] = BY / 2;
+			}
+		}
+		super.prepareImage(preparedImage);
+	}
+
+	encodeSSTV(oscillator, startTime) {
+		let time = startTime;
+
+		time = super.encodePrefix(oscillator, time);
+		time = super.encodeHeader(oscillator, time);
+
+		for(let scanLine = 0; scanLine < super.numScanLines; scanLine += 2){
+			oscillator.frequency.setValueAtTime(SYNC_PULSE_FREQ, time);
+			time += super.syncPulseLength;
+			oscillator.frequency.setValueAtTime(BLANKING_PULSE_FREQ, time);
+			time += super.blankingInterval;
+
+			oscillator.frequency.setValueCurveAtTime(super.preparedImage[scanLine][0], time, super.scanLineLength);
+			time += super.scanLineLength;
+			oscillator.frequency.setValueCurveAtTime(super.preparedImage[scanLine][1], time, super.scanLineLength);
+			time += super.scanLineLength;
+			oscillator.frequency.setValueCurveAtTime(super.preparedImage[scanLine][2], time, super.scanLineLength);
+			time += super.scanLineLength;
+			oscillator.frequency.setValueCurveAtTime(super.preparedImage[scanLine + 1][0], time, super.scanLineLength);
+			time += super.scanLineLength;
+		}
+
+		oscillator.start(startTime);
+		oscillator.stop(time);
+	}
+}
+class PD90 extends Format {
+
+	constructor() {
+		let numScanLines = 256;
+		let vertResolution = 320;
+		let blankingInterval = 0.00208;
+		let scanLineLength = 0.170240;
+		let syncPulseLength = 0.02;
+		let VISCode = [true, true, false, false, false, true, true];
+
+		super(numScanLines, vertResolution, blankingInterval, scanLineLength, syncPulseLength, VISCode);
+	}
+
+	prepareImage(data) {
+		let preparedImage = [];
+		for(let scanLine = 0; scanLine < this.numScanLines; ++scanLine){
+			let Y = [];
+			let RY = [];
+			let BY = [];
+			for(let vertPos = 0; vertPos < this.vertResolution; ++vertPos){
+  				let freqs = this.getYRYBYValueAsFreq(data, scanLine, vertPos);
+  				Y.push(freqs[0]);
+  				RY.push(freqs[1]);
+  				BY.push(freqs[2]);
+  			}
+  			preparedImage.push([Y, RY, BY]);
+		}
+		for(let scanLine = 0; scanLine < this.numScanLines; scanLine += 2){
+			for(let vertPos = 0; vertPos < this.vertResolution; ++vertPos){
+				let RY = preparedImage[scanLine][1][vertPos] + preparedImage[scanLine + 1][1][vertPos]
+				preparedImage[scanLine][1][vertPos] = RY / 2;
+				let BY = preparedImage[scanLine][2][vertPos] + preparedImage[scanLine + 1][2][vertPos]
+				preparedImage[scanLine][2][vertPos] = BY / 2;
+			}
+		}
+		super.prepareImage(preparedImage);
+	}
+
+	encodeSSTV(oscillator, startTime) {
+		let time = startTime;
+
+		time = super.encodePrefix(oscillator, time);
+		time = super.encodeHeader(oscillator, time);
+
+		for(let scanLine = 0; scanLine < super.numScanLines; scanLine += 2){
+			oscillator.frequency.setValueAtTime(SYNC_PULSE_FREQ, time);
+			time += super.syncPulseLength;
+			oscillator.frequency.setValueAtTime(BLANKING_PULSE_FREQ, time);
+			time += super.blankingInterval;
+
+			oscillator.frequency.setValueCurveAtTime(super.preparedImage[scanLine][0], time, super.scanLineLength);
+			time += super.scanLineLength;
+			oscillator.frequency.setValueCurveAtTime(super.preparedImage[scanLine][1], time, super.scanLineLength);
+			time += super.scanLineLength;
+			oscillator.frequency.setValueCurveAtTime(super.preparedImage[scanLine][2], time, super.scanLineLength);
+			time += super.scanLineLength;
+			oscillator.frequency.setValueCurveAtTime(super.preparedImage[scanLine + 1][0], time, super.scanLineLength);
+			time += super.scanLineLength;
+		}
+
+		oscillator.start(startTime);
+		oscillator.stop(time);
+	}
+}
 
 //---------- Frontend Controls ----------//
 
@@ -479,6 +620,10 @@ startButton.onclick = () => {
 		format = new ScottieTwo();
 	else if(modeSelect.value == "SDX")
 		format = new ScottieDX();
+	else if(modeSelect.value == "PD50")
+		format = new PD50();
+	else if(modeSelect.value == "PD90")
+		format = new PD90();
 	else {
 		warningText.textContent = "You must select a mode";
 		startButton.disabled = true;
