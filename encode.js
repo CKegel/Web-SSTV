@@ -578,21 +578,48 @@ let modeSelect = document.getElementById("modeSelect")
 let startButton = document.getElementById("startButton");
 let imgPicker = document.getElementById("imgPicker");
 let warningText = document.getElementById("warningText");
+let callSignEntry = document.getElementById("callSign");
+let callSignLocation = document.getElementById("callSignLocation")
 
 let canvas = document.getElementById("imgCanvas");
 let canvasCtx = canvas.getContext("2d");
+let rawImage = new Image();
+let sstvFormat = new Format();
+
+function drawPreview() {
+	canvas.width = sstvFormat.vertResolution;
+	canvas.height = sstvFormat.numScanLines;
+	canvasCtx.drawImage(rawImage,0,0, canvas.width, canvas.height);
+	canvasCtx.font = "bold 24pt sans-serif";
+
+	let callSignYCord;
+	if(callSignLocation.value == "top-left")
+		callSignYCord = 30;
+	else if(callSignLocation.value == "bottom-left")
+		callSignYCord = sstvFormat.numScanLines - 6;
+
+	canvasCtx.fillText(callSignEntry.value, 10, callSignYCord);
+	canvasCtx.strokeStyle = "white";
+	canvasCtx.strokeText(callSignEntry.value, 10, callSignYCord);
+	imageLoaded = true;
+}
+
+callSignEntry.oninput = (e) => {
+	if(imageLoaded)
+		drawPreview();
+}
+
+callSignLocation.addEventListener("change", (e) => {
+	if(imageLoaded)
+		drawPreview();
+});
+
+rawImage.onload = () => { drawPreview() };
 
 imgPicker.addEventListener("change", (e) => {
     var reader = new FileReader();
     reader.onload = function(event){
-        var img = new Image();
-        img.onload = function(){
-            canvas.width = 320;
-            canvas.height = 256;
-            canvasCtx.drawImage(img,0,0, canvas.width, canvas.height);
-        }
-        img.src = event.target.result;
-        imageLoaded = true;
+        rawImage.src = event.target.result;
         if(modeSelect.value != "none"){
 			warningText.textContent = "";
 			startButton.disabled = false;
@@ -605,26 +632,27 @@ modeSelect.addEventListener("change", (e) => {
 	if(modeSelect.value != "none"){
 			warningText.textContent = "";
 			startButton.disabled = !imageLoaded;
+			imgPicker.disabled = false;
         }
+	if(modeSelect.value == "M1")
+		sstvFormat = new MartinMOne();
+	else if(modeSelect.value == "M2")
+		sstvFormat = new MartinMTwo();
+	else if(modeSelect.value == "S1")
+		sstvFormat = new ScottieOne();
+	else if(modeSelect.value == "S2")
+		sstvFormat = new ScottieTwo();
+	else if(modeSelect.value == "SDX")
+		sstvFormat = new ScottieDX();
+	else if(modeSelect.value == "PD50")
+		sstvFormat = new PD50();
+	else if(modeSelect.value == "PD90")
+		sstvFormat = new PD90();
 });
 
 startButton.onclick = () => {
-	let format;
-	if(modeSelect.value == "M1")
-		format = new MartinMOne();
-	else if(modeSelect.value == "M2")
-		format = new MartinMTwo();
-	else if(modeSelect.value == "S1")
-		format = new ScottieOne();
-	else if(modeSelect.value == "S2")
-		format = new ScottieTwo();
-	else if(modeSelect.value == "SDX")
-		format = new ScottieDX();
-	else if(modeSelect.value == "PD50")
-		format = new PD50();
-	else if(modeSelect.value == "PD90")
-		format = new PD90();
-	else {
+
+	if(modeSelect.value == "none") {
 		warningText.textContent = "You must select a mode";
 		startButton.disabled = true;
 		return;
@@ -648,6 +676,6 @@ startButton.onclick = () => {
 
 	oscillator.connect(audioCtx.destination);
 
-	format.prepareImage(canvasData.data);
-	format.encodeSSTV(oscillator, audioCtx.currentTime + 1);
+	sstvFormat.prepareImage(canvasData.data);
+	sstvFormat.encodeSSTV(oscillator, audioCtx.currentTime + 1);
 };
