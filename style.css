@@ -5,3 +5,11 @@
 	padding: 10px;
 	color: red;
 }
+
+.rounded {
+	border-radius: 10px;
+}
+
+li {
+	font-size: 32px;
+}
