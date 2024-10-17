@@ -6,6 +6,11 @@
 	color: red;
 }
 
+#previewArea {
+	padding: 10px;
+	background: black;
+}
+
 .rounded {
 	border-radius: 10px;
 }

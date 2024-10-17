@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
 	<link rel="stylesheet" href="./style.css">
 	<title>Web-SSTV</title>
 </head>
@@ -29,15 +29,22 @@
 			<option value="S1">Scottie 1</option>
 			<option value="S2">Scottie 2</option>
 			<option value="SDX">Scottie DX</option>
+			<option value="none" disabled>--- WRASSE ---</option>
+			<option value="WrasseSC2180">SC2-180</option>
 			<option value="none" disabled>--- PD ---</option>
 			<option value="PD50">PD-50</option>
 			<option value="PD90">PD-90</option>
+			<option value="PD120">PD-120</option>
+			<option value="PD160">PD-160</option>
+			<option value="PD180">PD-180</option>
+			<option value="PD240">PD-240</option>
+			<option value="PD290">PD-290</option>
 		</select>
 
 		<label id="imgLabel" for="imgPicker">Upload an image:</label>
 		<input type="file" name="imgPicker" id="imgPicker" disabled />
 		<center id="imgArea" class="container">
-			<canvas id="imgCanvas" width="320" height="256"></canvas>
+			<canvas id="imgCanvas" ></canvas>
 			<br>
 			<span id="warningText"></span>
 		</center>
@@ -58,7 +65,7 @@
 		<br>
 		<small><a href="https://github.com/CKegel/Web-SSTV/">Check out the project on Github</a></small>
 		<br>
-		<small>&copy 2023 Christian Kegel - Available under the MIT License</small>
+		<small>&copy <script>document.write(new Date().getFullYear())</script> Christian Kegel - Available under the MIT License</small>
 	</footer>
 </body>
 <script src="./encode.js"></script>
