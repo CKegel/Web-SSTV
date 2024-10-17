@@ -3,7 +3,8 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.colors.min.css">
 	<link rel="stylesheet" href="./style.css">
 	<title>Web-SSTV</title>
 </head>
@@ -17,16 +18,27 @@
     <li><a href="./learn.html">Learn</a></li>
   </ul>
 </nav>
+
 <body>
+
 	<main class="container">
-		<h4>Stand by for SSTV decoding (coming soon...)</h4>
+		<center>
+			<h4><span class="pico-color-amber-200" id="decodeText">Waiting for Audio Feed...</span></h4>
+			<div id="previewArea" class="">
+				<canvas id="preview"></canvas>
+			</div>
+			<p>SSTV decoding is currently under development and not currently operational. Encountered an issue or unexpected behavior? Create an issue <a href="https://github.com/CKegel/Web-SSTV/issues">on GitHub</a>.</p>
+		</center>
 	</main>
+
 	<footer class="container">
 		<small>SSTV signal decoding and more encoding modes coming soon.</small>
 		<br>
 		<small><a href="https://github.com/CKegel/Web-SSTV/">Check out the project on Github</a></small>
 		<br>
-		<small>&copy 2023 Christian Kegel - Available under the MIT License</small>
+		<small>&copy <script>document.write(new Date().getFullYear())</script> Christian Kegel - Available under the MIT License</small>
 	</footer>
 </body>
+<script src="./goertzel.js"></script>
+<script src="./decode.js"></script>
 </html>
