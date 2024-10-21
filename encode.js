@@ -701,7 +701,7 @@ startButton.onclick = () => {
 	}
 
 	sstvFormat.getDuration = function() {
-		return (this.numScanLines * (this.scanLineLength + this.blankingInterval) + this.syncPulseLength) + 1;
+		return (this.numScanLines * (this.scanLineLength + this.blankingInterval + this.syncPulseLength * 3);
 	};
 
 	let oscillator = audioCtx.createOscillator();
