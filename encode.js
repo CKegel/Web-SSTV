@@ -604,32 +604,157 @@ modeSelect.addEventListener("change", (e) => {
 		drawPreview();
 });
 
+function bufferToWave(abuffer, len) {
+    var numOfChan = abuffer.numberOfChannels,
+        length = len * numOfChan * 2 + 44,
+        buffer = new ArrayBuffer(length),
+        view = new DataView(buffer),
+        channels = [],
+        i,
+        sample,
+        offset = 0,
+        pos = 0;
+
+    // write WAVE header
+    setUint32(0x46464952); // "RIFF"
+    setUint32(length - 8); // file length - 8
+    setUint32(0x45564157); // "WAVE"
+
+    setUint32(0x20746d66); // "fmt " chunk
+    setUint32(16); // length = 16
+    setUint16(1); // PCM (uncompressed)
+    setUint16(numOfChan);
+    setUint32(abuffer.sampleRate);
+    setUint32(abuffer.sampleRate * 2 * numOfChan); // avg. bytes/sec
+    setUint16(numOfChan * 2); // block-align
+    setUint16(16); // 16-bit (hardcoded in this demo)
+
+    setUint32(0x61746164); // "data" - chunk
+    setUint32(length - pos - 4); // chunk length
+
+    // write interleaved data
+    for (i = 0; i < abuffer.numberOfChannels; i++)
+        channels.push(abuffer.getChannelData(i));
+
+    while (pos < length) {
+        for (i = 0; i < numOfChan; i++) {
+            // interleave channels
+            sample = Math.max(-1, Math.min(1, channels[i][offset])); // clamp
+            sample = (0.5 + sample * 0.5) * 0xffff; // scale to 16-bit unsigned
+            sample = Math.floor(sample);
+            view.setUint16(pos, sample, true); // write 16-bit sample
+            pos += 2;
+        }
+        offset++; // next source sample
+    }
+
+    return buffer;
+
+    function setUint16(data) {
+        view.setUint16(pos, data, true);
+        pos += 2;
+    }
+
+    function setUint32(data) {
+        view.setUint32(pos, data, true);
+        pos += 4;
+    }
+}
+
+function saveWavFile(buffer, filename) {
+    var blob = new Blob([buffer], { type: 'audio/wav' });
+    var url = window.URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+
+let saveButton = document.createElement("button");
+saveButton.id = "saveButton";
+saveButton.className = "contrast";
+saveButton.textContent = "Save as WAV";
+saveButton.disabled = true;
+document.querySelector("main.container").appendChild(saveButton);
+
 startButton.onclick = () => {
+    if (modeSelect.value == "none") {
+        warningText.textContent = "You must select a mode";
+        startButton.disabled = true;
+        return;
+    }
 
-	if(modeSelect.value == "none") {
-		warningText.textContent = "You must select a mode";
-		startButton.disabled = true;
-		return;
-	}
+    if (!imageLoaded) {
+        warningText.textContent = "You must upload an image";
+        startButton.disabled = true;
+        return;
+    }
 
-	if(!imageLoaded){
-		warningText.textContent = "You must upload an image";
-		startButton.disabled = true;
-		return;
-	}
-
-	let canvasData = canvasCtx.getImageData(0, 0, canvas.width, canvas.height);
+    let canvasData = canvasCtx.getImageData(0, 0, canvas.width, canvas.height);
 
 	warningText.textContent = "";
 	if (audioCtx.state === "suspended") {
-    	audioCtx.resume();
-    }
+		audioCtx.resume();
+	}
 
-    let oscillator = audioCtx.createOscillator();
+	sstvFormat.getDuration = function() {
+		return (this.numScanLines * (this.scanLineLength + this.blankingInterval) + this.syncPulseLength) + 1;
+	};
+
+	let oscillator = audioCtx.createOscillator();
 	oscillator.type = "sine";
 
+	let dest = audioCtx.createMediaStreamDestination();
+	oscillator.connect(dest);
 	oscillator.connect(audioCtx.destination);
 
 	sstvFormat.prepareImage(canvasData.data);
 	sstvFormat.encodeSSTV(oscillator, audioCtx.currentTime + 1);
+
+	let recorder = new MediaRecorder(dest.stream);
+	let chunks = [];
+
+	recorder.ondataavailable = (e) => {
+		chunks.push(e.data);
+	};
+
+	recorder.onstop = async () => {
+		let blob = new Blob(chunks, { type: 'audio/ogg; codecs=opus' });
+		let arrayBuffer = await blob.arrayBuffer();
+		let audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+		let wavBuffer = bufferToWave(audioBuffer, audioBuffer.length);
+		let wavBlob = new Blob([wavBuffer], { type: 'audio/wav' });
+		let url = URL.createObjectURL(wavBlob);
+		let imgName = imgPicker.value.split("\\")[2].split(".")[0];
+		saveButton.dataset.url = url;
+		saveButton.dataset.filename = 'sstv_' + imgName + '.wav';
+		saveButton.disabled = false;
+	};
+
+	recorder.start();
+	oscillator.stop(audioCtx.currentTime + 1 + sstvFormat.getDuration());
+
+	oscillator.onended = () => {
+		recorder.stop();
+	};
 };
+
+saveButton.onclick = () => {
+    let url = saveButton.dataset.url;
+    let filename = saveButton.dataset.filename;
+    let a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+};
+
+window.addEventListener('beforeunload', () => {
+    if (saveButton.dataset.url) {
+        window.URL.revokeObjectURL(saveButton.dataset.url);
+    }
+});
