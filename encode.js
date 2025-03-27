@@ -649,9 +649,9 @@ startButton.onclick = () => {
 
 	sstvFormat.prepareImage(canvasData.data);
 	let startTime = audioCtx.currentTime + 1;
-	let endTime = sstvFormat.encodeSSTV(oscillator, audioCtx.currentTime + 1);
 	oscillator.start(startTime);
-	oscillator.end(endTime);
+	let endTime = sstvFormat.encodeSSTV(oscillator, audioCtx.currentTime + 1);
+	oscillator.stop(endTime);
 };
 
 function createWAVHeader(audioLength) {
