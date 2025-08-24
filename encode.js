@@ -294,7 +294,7 @@ class ScottieOne extends ScottieBase {
 		let blankingInterval = 0.0015;
 		let scanLineLength = 0.138240;
 		let syncPulseLength = 0.009;
-		let VISCode = [false, true, true, true, true, false, false];
+		let VISCode = [false, false, true, true, true, true, false];
 
 		super(numScanLines, vertResolution, blankingInterval, scanLineLength, syncPulseLength, VISCode);
 	}
