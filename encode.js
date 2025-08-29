@@ -294,7 +294,7 @@ class ScottieOne extends ScottieBase {
 		let blankingInterval = 0.0015;
 		let scanLineLength = 0.138240;
 		let syncPulseLength = 0.009;
-		let VISCode = [false, true, true, true, true, false, false];
+		let VISCode = [false, false, true, true, true, true, false];
 
 		super(numScanLines, pixelsPerLine, blankingInterval, scanLineLength, syncPulseLength, VISCode);
 	}
@@ -464,7 +464,7 @@ class PD290 extends PDBase {
 	}
 }
 
-class WrasseSC2 extends Format {
+class WraaseSC2 extends Format {
 	prepareImage(data) {
 		let preparedImage = [];
 		for(let scanLine = 0; scanLine < this.numScanLines; ++scanLine){
@@ -507,7 +507,7 @@ class WrasseSC2 extends Format {
 		return (super.numScanLines * (super.syncPulseLength + super.blankingInterval + super.scanLineLength * 3));
 	}
 }
-class WrasseSC2180 extends WrasseSC2 {
+class WraaseSC2180 extends WraaseSC2 {
 	constructor() {
 		let numScanLines = 256;
 		let pixelsPerLine = 320;
@@ -614,8 +614,8 @@ modeSelect.addEventListener("change", (e) => {
 		sstvFormat = new PD290();
 	else if(modeSelect.value == "RobotBW8")
 		sstvFormat = new RobotBW8();
-	else if(modeSelect.value == "WrasseSC2180")
-		sstvFormat = new WrasseSC2180();
+	else if(modeSelect.value == "WraaseSC2180")
+		sstvFormat = new WraaseSC2180();
 
 	if(imageLoaded)
 		drawPreview();
