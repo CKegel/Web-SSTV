@@ -6,4 +6,4 @@ Currently Web SSTV supports encoding images using the Martin, Scottie, PD, and W
 ## Sources
 Both the [SSTV Handbook](https://www.sstv-handbook.com/) and [JL Barber's (N7CXI) Proposal for SSTV Mode Specifications ](http://www.barberdsp.com/downloads/Dayton%20Paper.pdf) were heavily referenced when implementing support for the Martin and Scottie formats.
 ## License
-Web-SSTV is available freely under the MIT license. Should you decide to host your own instance of WebSSTV without substantial modification, please provide a link to this repository and a copy of the MIT license, including the original copyright statement.
+Web-SSTV is available freely under the MIT license. Should you decide to host your own instance of WebSSTV, you must provide a link to this repository and a copy of the MIT license, including the original copyright statement.
