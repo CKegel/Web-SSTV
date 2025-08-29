@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2024 Christian Kegel
+Copyright (c) 2025 Christian Kegel
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -30,16 +30,16 @@ const VIS_BIT_FREQ = {
 class Format {
 
 	#numScanLines;
-	#vertResolution;
+	#pixelsPerLine;
 	#blankingInterval;
 	#scanLineLength;
 	#syncPulseLength;
 	#VISCode;
 	#preparedImage = [];
 
-	constructor(numScanLines, vertResolution, blankingInterval, scanLineLength, syncPulseLength, VISCode) {
+	constructor(numScanLines, pixelsPerLine, blankingInterval, scanLineLength, syncPulseLength, VISCode) {
 		this.#numScanLines = numScanLines;
-		this.#vertResolution = vertResolution;
+		this.#pixelsPerLine = pixelsPerLine;
 		this.#blankingInterval = blankingInterval;
 		this.#scanLineLength = scanLineLength;
 		this.#syncPulseLength = syncPulseLength;
@@ -47,13 +47,13 @@ class Format {
 	}
 
 	getGreyscaleFreq(data, scanLine, vertPos) {
-		const index = scanLine * (this.#vertResolution * 4) + vertPos * 4;
+		const index = scanLine * (this.#pixelsPerLine * 4) + vertPos * 4;
 		let grey = data[index] * 0.299 + 0.587 * data[index + 1] + 0.114 * data[index + 2]
 		return grey * COLOR_FREQ_MULT + 1500
 	}
 
 	getRGBValueAsFreq(data, scanLine, vertPos) {
-		const index = scanLine * (this.#vertResolution * 4) + vertPos * 4;
+		const index = scanLine * (this.#pixelsPerLine * 4) + vertPos * 4;
 		let red = data[index] * COLOR_FREQ_MULT + 1500;
 		let green = data[index + 1] * COLOR_FREQ_MULT + 1500;
 		let blue = data[index + 2] * COLOR_FREQ_MULT + 1500;
@@ -61,7 +61,7 @@ class Format {
 	}
 
 	getYRYBYValueAsFreq(data, scanLine, vertPos) {
-		const index = scanLine * (this.#vertResolution * 4) + vertPos * 4;
+		const index = scanLine * (this.#pixelsPerLine * 4) + vertPos * 4;
 		let red = data[index];
 		let green = data[index + 1];
 		let blue = data[index + 2];
@@ -149,8 +149,8 @@ class Format {
 	get numScanLines() {
 		return this.#numScanLines;
 	}
-	get vertResolution() {
-		return this.#vertResolution;
+	get pixelsPerLine() {
+		return this.#pixelsPerLine;
 	}
 	get blankingInterval() {
 		return this.#blankingInterval;
@@ -177,7 +177,7 @@ class MartinBase extends Format {
 			let red = [];
 			let green = [];
 			let blue = [];
-			for(let vertPos = 0; vertPos < this.vertResolution; ++vertPos){
+			for(let vertPos = 0; vertPos < this.pixelsPerLine; ++vertPos){
   				let freqs = this.getRGBValueAsFreq(data, scanLine, vertPos);
   				red.push(freqs[0]);
   				green.push(freqs[1]);
@@ -217,25 +217,25 @@ class MartinBase extends Format {
 class MartinMOne extends MartinBase {
 	constructor() {
 		let numScanLines = 256;
-		let vertResolution = 320;
+		let pixelsPerLine = 320;
 		let blankingInterval = 0.000572;
 		let scanLineLength = 0.146432;
 		let syncPulseLength = 0.004862;
 		let VISCode = [false, true, false, true, true, false, false];
 
-		super(numScanLines, vertResolution, blankingInterval, scanLineLength, syncPulseLength, VISCode);
+		super(numScanLines, pixelsPerLine, blankingInterval, scanLineLength, syncPulseLength, VISCode);
 	}
 }
 class MartinMTwo extends MartinBase {
 	constructor() {
 		let numScanLines = 256;
-		let vertResolution = 320;
+		let pixelsPerLine = 320;
 		let blankingInterval = 0.000572;
 		let scanLineLength = 0.073216;
 		let syncPulseLength = 0.004862;
 		let VISCode = [false, true, false, true, false, false, false];
 
-		super(numScanLines, vertResolution, blankingInterval, scanLineLength, syncPulseLength, VISCode);
+		super(numScanLines, pixelsPerLine, blankingInterval, scanLineLength, syncPulseLength, VISCode);
 	}
 }
 
@@ -246,7 +246,7 @@ class ScottieBase extends Format {
 			let red = [];
 			let green = [];
 			let blue = [];
-			for(let vertPos = 0; vertPos < this.vertResolution; ++vertPos){
+			for(let vertPos = 0; vertPos < this.pixelsPerLine; ++vertPos){
   				let freqs = this.getRGBValueAsFreq(data, scanLine, vertPos);
   				red.push(freqs[0]);
   				green.push(freqs[1]);
@@ -290,37 +290,37 @@ class ScottieBase extends Format {
 class ScottieOne extends ScottieBase {
 	constructor() {
 		let numScanLines = 256;
-		let vertResolution = 320;
+		let pixelsPerLine = 320;
 		let blankingInterval = 0.0015;
 		let scanLineLength = 0.138240;
 		let syncPulseLength = 0.009;
-		let VISCode = [false, true, true, true, true, false, false];
+		let VISCode = [false, false, true, true, true, true, false];
 
-		super(numScanLines, vertResolution, blankingInterval, scanLineLength, syncPulseLength, VISCode);
+		super(numScanLines, pixelsPerLine, blankingInterval, scanLineLength, syncPulseLength, VISCode);
 	}
 }
 class ScottieTwo extends ScottieBase {
 	constructor() {
 		let numScanLines = 256;
-		let vertResolution = 320;
+		let pixelsPerLine = 320;
 		let blankingInterval = 0.0015;
 		let scanLineLength = 0.088064;
 		let syncPulseLength = 0.009;
 		let VISCode = [false, true, true, true, false, false, false];
 
-		super(numScanLines, vertResolution, blankingInterval, scanLineLength, syncPulseLength, VISCode);
+		super(numScanLines, pixelsPerLine, blankingInterval, scanLineLength, syncPulseLength, VISCode);
 	}
 }
 class ScottieDX extends ScottieBase {
 	constructor() {
 		let numScanLines = 256;
-		let vertResolution = 320;
+		let pixelsPerLine = 320;
 		let blankingInterval = 0.0015;
 		let scanLineLength = 0.3456;
 		let syncPulseLength = 0.009;
 		let VISCode = [true, false, false, true, true, false, false];
 
-		super(numScanLines, vertResolution, blankingInterval, scanLineLength, syncPulseLength, VISCode);
+		super(numScanLines, pixelsPerLine, blankingInterval, scanLineLength, syncPulseLength, VISCode);
 	}
 }
 
@@ -331,7 +331,7 @@ class PDBase extends Format {
 			let Y = [];
 			let RY = [];
 			let BY = [];
-			for(let vertPos = 0; vertPos < this.vertResolution; ++vertPos){
+			for(let vertPos = 0; vertPos < this.pixelsPerLine; ++vertPos){
   				let freqs = this.getYRYBYValueAsFreq(data, scanLine, vertPos);
   				Y.push(freqs[0]);
   				RY.push(freqs[1]);
@@ -340,7 +340,7 @@ class PDBase extends Format {
   			preparedImage.push([Y, RY, BY]);
 		}
 		for(let scanLine = 0; scanLine < this.numScanLines; scanLine += 2){
-			for(let vertPos = 0; vertPos < this.vertResolution; ++vertPos){
+			for(let vertPos = 0; vertPos < this.pixelsPerLine; ++vertPos){
 				let RY = preparedImage[scanLine][1][vertPos] + preparedImage[scanLine + 1][1][vertPos]
 				preparedImage[scanLine][1][vertPos] = RY / 2;
 				let BY = preparedImage[scanLine][2][vertPos] + preparedImage[scanLine + 1][2][vertPos]
@@ -382,85 +382,85 @@ class PDBase extends Format {
 class PD50 extends PDBase {
 	constructor() {
 		let numScanLines = 256;
-		let vertResolution = 320;
+		let pixelsPerLine = 320;
 		let blankingInterval = 0.00208;
 		let scanLineLength = 0.091520;
 		let syncPulseLength = 0.02;
 		let VISCode = [true, false, true, true, true, false, true];
 
-		super(numScanLines, vertResolution, blankingInterval, scanLineLength, syncPulseLength, VISCode);
+		super(numScanLines, pixelsPerLine, blankingInterval, scanLineLength, syncPulseLength, VISCode);
 	}
 }
 class PD90 extends PDBase {
 	constructor() {
 		let numScanLines = 256;
-		let vertResolution = 320;
+		let pixelsPerLine = 320;
 		let blankingInterval = 0.00208;
 		let scanLineLength = 0.170240;
 		let syncPulseLength = 0.02;
 		let VISCode = [true, true, false, false, false, true, true];
 
-		super(numScanLines, vertResolution, blankingInterval, scanLineLength, syncPulseLength, VISCode);
+		super(numScanLines, pixelsPerLine, blankingInterval, scanLineLength, syncPulseLength, VISCode);
 	}
 }
 class PD120 extends PDBase {
 	constructor() {
 		let numScanLines = 496;
-		let vertResolution = 640;
+		let pixelsPerLine = 640;
 		let blankingInterval = 0.00208;
 		let scanLineLength = 0.121600;
 		let syncPulseLength = 0.02;
 		let VISCode = [true, false, true, true, true, true, true];
 
-		super(numScanLines, vertResolution, blankingInterval, scanLineLength, syncPulseLength, VISCode);
+		super(numScanLines, pixelsPerLine, blankingInterval, scanLineLength, syncPulseLength, VISCode);
 	}
 }
 class PD160 extends PDBase {
 	constructor() {
 		let numScanLines = 400;
-		let vertResolution = 512;
+		let pixelsPerLine = 512;
 		let blankingInterval = 0.00208;
 		let scanLineLength = 0.195584;
 		let syncPulseLength = 0.02;
 		let VISCode = [true, true, false, false, true, false, false];
 
-		super(numScanLines, vertResolution, blankingInterval, scanLineLength, syncPulseLength, VISCode);
+		super(numScanLines, pixelsPerLine, blankingInterval, scanLineLength, syncPulseLength, VISCode);
 	}
 }
 class PD180 extends PDBase {
 	constructor() {
 		let numScanLines = 496;
-		let vertResolution = 640;
+		let pixelsPerLine = 640;
 		let blankingInterval = 0.00208;
 		let scanLineLength = 0.18304;
 		let syncPulseLength = 0.02;
 		let VISCode = [true, true, false, false, false, false, false];
 
-		super(numScanLines, vertResolution, blankingInterval, scanLineLength, syncPulseLength, VISCode);
+		super(numScanLines, pixelsPerLine, blankingInterval, scanLineLength, syncPulseLength, VISCode);
 	}
 }
 class PD240 extends PDBase {
 	constructor() {
 		let numScanLines = 496;
-		let vertResolution = 640;
+		let pixelsPerLine = 640;
 		let blankingInterval = 0.00208;
 		let scanLineLength = 0.24448;
 		let syncPulseLength = 0.02;
 		let VISCode = [true, true, false, false, false, false, true];
 
-		super(numScanLines, vertResolution, blankingInterval, scanLineLength, syncPulseLength, VISCode);
+		super(numScanLines, pixelsPerLine, blankingInterval, scanLineLength, syncPulseLength, VISCode);
 	}
 }
 class PD290 extends PDBase {
 	constructor() {
 		let numScanLines = 616;
-		let vertResolution = 800;
+		let pixelsPerLine = 800;
 		let blankingInterval = 0.00208;
 		let scanLineLength = 0.2288;
 		let syncPulseLength = 0.02;
 		let VISCode = [true, false, true, true, true, true, false];
 
-		super(numScanLines, vertResolution, blankingInterval, scanLineLength, syncPulseLength, VISCode);
+		super(numScanLines, pixelsPerLine, blankingInterval, scanLineLength, syncPulseLength, VISCode);
 	}
 }
 
@@ -471,7 +471,7 @@ class WraaseSC2 extends Format {
 			let red = [];
 			let green = [];
 			let blue = [];
-			for(let vertPos = 0; vertPos < this.vertResolution; ++vertPos){
+			for(let vertPos = 0; vertPos < this.pixelsPerLine; ++vertPos){
   				let freqs = this.getRGBValueAsFreq(data, scanLine, vertPos);
   				red.push(freqs[0]);
   				green.push(freqs[1]);
@@ -510,13 +510,13 @@ class WraaseSC2 extends Format {
 class WraaseSC2180 extends WraaseSC2 {
 	constructor() {
 		let numScanLines = 256;
-		let vertResolution = 320;
+		let pixelsPerLine = 320;
 		let blankingInterval = 0.0005;
 		let scanLineLength = 0.235;
 		let syncPulseLength = 0.0055225;
 		let VISCode = [false, true, true, false, true, true, true];
 
-		super(numScanLines, vertResolution, blankingInterval, scanLineLength, syncPulseLength, VISCode);
+		super(numScanLines, pixelsPerLine, blankingInterval, scanLineLength, syncPulseLength, VISCode);
 	}
 }
 
@@ -539,7 +539,7 @@ let rawImage = new Image();
 let sstvFormat = new Format();
 
 function drawPreview() {
-	canvas.width = sstvFormat.vertResolution;
+	canvas.width = sstvFormat.pixelsPerLine;
 	canvas.height = sstvFormat.numScanLines;
 	canvasCtx.drawImage(rawImage,0,0, canvas.width, canvas.height);
 	canvasCtx.font = "bold 24pt sans-serif";
